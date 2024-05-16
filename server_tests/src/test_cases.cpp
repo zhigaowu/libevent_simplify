@@ -10,7 +10,7 @@
  *       Revision:  none
  *       Compiler:  g++
  *
- *         Author:  Jingang Zhou, jingang.zhou@baltamatica.com
+ *         Author:  Zhigao Wu, wuzhigaoem@163.com
  * ==========================================================================
  */
 
