@@ -56,6 +56,8 @@ namespace io_simplify {
             int Write(const void* data, size_t size);
             int WriteBuffer(struct evbuffer *evbuf);
 
+            int SetTimetout(const struct timeval *timeout_read, const struct timeval *timeout_write);
+
             int BindConnectionCallback(
                 short event,
                 const CallbackConnectionReadReady& callback_connection_read_ready,
