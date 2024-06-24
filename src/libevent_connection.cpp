@@ -58,6 +58,16 @@ namespace io_simplify {
             return -1;
         }
 
+        int Connection::SetTimetout(const struct timeval *timeout_read, const struct timeval *timeout_write)
+        {
+            if (_bev)
+            {
+                return bufferevent_set_timeouts(_bev, timeout_read, timeout_write);
+            }
+
+            return -1;
+        }
+
         void Connection::callbackToRead(struct bufferevent *bev, void *ctx)
         {
             Connection* connection = (Connection*)ctx;
