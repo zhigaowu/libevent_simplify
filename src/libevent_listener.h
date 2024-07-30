@@ -24,7 +24,7 @@
 namespace io_simplify {
     
     namespace libevent {
-        using CallbackConnectionReady = std::function<void(struct event_base*, evutil_socket_t, struct sockaddr*, socklen_t)>; // evutil_socket_t fd, struct sockaddr *sa, int socklen
+        using CallbackConnectionReady = std::function<void(struct event_base*, evutil_socket_t, const struct sockaddr*, socklen_t)>; // evutil_socket_t fd, struct sockaddr *sa, int socklen
         using CallbackListenerErrorOccurred = std::function<void(int, const char*)>; 
 
         class Listener {

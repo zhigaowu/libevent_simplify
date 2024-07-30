@@ -20,9 +20,12 @@
 #include "libevent_objects.h"
 
 #include <thread>
+#include <functional>
 
 namespace io_simplify {
     namespace libevent {
+
+        using CallbackTimeout = std::function<void()>;
 
         class EventServer {
             std::thread _server;
@@ -36,10 +39,28 @@ namespace io_simplify {
                 _base.Loop();
             }
 
-        public:
-            static void KeepAlive(evutil_socket_t, short, void *)
-            {}
+        private:
+            struct Timer {
+                struct event* handle = nullptr;
+                short events = 0;
+                CallbackTimeout callback = nullptr;
+            };
 
+            static void timeout_callback(evutil_socket_t, short, void* cb_data)
+            {
+                Timer* timer = (Timer*)cb_data;
+                
+                timer->callback();
+
+                if ((timer->events & EV_PERSIST) == 0)
+                {
+                    event_free(timer->handle);
+
+                    delete timer;
+                }
+            }
+
+        public:
             EventServer()
                 : _server()
                 , _base(BaseConfig().NewBase())
@@ -61,12 +82,12 @@ namespace io_simplify {
                 }
             }
 
-            EventBase& GetEventBase()
+            EventBase& GetBase()
             {
                 return _base;
             }
 
-            int Serve(event_callback_fn callback_timeout = KeepAlive, const timeval tval = {1, 0}, void* callback_ctx = nullptr)
+            int Serve(struct event* user_event, const timeval* tval = nullptr)
             {
                 int res = -1;
 
@@ -77,15 +98,9 @@ namespace io_simplify {
                         break;
                     }
 
-                    if (callback_timeout)
+                    if (user_event)
                     {
-                        struct event* timer = event_new(_base.GetHandle(), -1, EV_TIMEOUT | EV_PERSIST, callback_timeout, callback_ctx);
-                        if (!timer)
-                        {
-                            break;
-                        }
-
-                        if ((res = event_add(timer, &tval)) < 0)
+                        if ((res = event_add(user_event, tval)) < 0)
                         {
                             break;
                         }
@@ -97,6 +112,70 @@ namespace io_simplify {
                 } while (false);
 
                 return res;
+            }
+
+            int AddTimer(const timeval* tval, const CallbackTimeout& callback_timeout, void** timer)
+            {
+                int res = 0;
+                Timer* new_timer = new Timer{nullptr, EV_TIMEOUT, callback_timeout};
+
+                if (new_timer)
+                {
+                    new_timer->handle = event_new(_base.GetHandle(), -1, new_timer->events, timeout_callback, new_timer);
+                    
+                    if ((res = event_add(new_timer->handle, tval)) < 0)
+                    {
+                        event_free(new_timer->handle);
+
+                        delete new_timer;
+                        new_timer = nullptr;
+                    }
+                }
+
+                if (timer)
+                {
+                    *timer = new_timer;
+                }
+
+                return res;
+            }
+
+            int AddPersistTimer(const timeval* tval, const CallbackTimeout& callback_timeout, void** timer)
+            {
+                int res = 0;
+                Timer* new_timer = new Timer{nullptr, EV_TIMEOUT | EV_PERSIST, callback_timeout};
+
+                if (new_timer)
+                {
+                    new_timer->handle = event_new(_base.GetHandle(), -1, new_timer->events, timeout_callback, new_timer);
+                    
+                    if ((res = event_add(new_timer->handle, tval)) < 0)
+                    {
+                        event_free(new_timer->handle);
+
+                        delete new_timer;
+                        new_timer = nullptr;
+                    }
+                }
+
+                if (*timer)
+                {
+                    *timer = new_timer;
+                }
+
+                return res;
+            }
+
+            void DeleteTimer(void* timer)
+            {
+                Timer* delete_timer = (Timer*)timer;
+
+                if (delete_timer)
+                {
+                    event_free(delete_timer->handle);
+
+                    delete delete_timer;
+                }
             }
 
             int Exit()

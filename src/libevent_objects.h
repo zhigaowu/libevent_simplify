@@ -28,6 +28,8 @@ namespace io_simplify {
         uint16_t port = 0;
     };
 
+    Endpoint FromSockAddress(const struct sockaddr *sa, socklen_t socklen);
+
     namespace libevent {
 
         /*
@@ -96,7 +98,7 @@ namespace io_simplify {
         public:
             BaseConfig()
                 : _evconfig(event_config_new())
-            {                
+            {
             }
 
             ~BaseConfig()

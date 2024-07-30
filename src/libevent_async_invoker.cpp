@@ -9,10 +9,10 @@ namespace io_simplify {
 
     namespace libevent {
 
-        AsyncInvoker::AsyncInvoker(struct event_base *evbase, short flags)
-            : _evevent(event_new(evbase, 
+        AsyncInvoker::AsyncInvoker(struct event_base *evbase, short events)
+            : _event(event_new(evbase, 
                                     -1, 
-                                    flags, 
+                                    events | EV_PERSIST, 
                                     callbackInvoked,
                                     this))
 
@@ -20,19 +20,19 @@ namespace io_simplify {
 
             , _callback_to_invoke_list()
         {
-            if (_evevent)
-            {
-                event_add(_evevent, nullptr);
-            }
-            
         }
 
         AsyncInvoker::~AsyncInvoker()
         {
-            if (_evevent)
+            if (_event)
             {
-                event_free(_evevent);
+                event_free(_event);
             }
+        }
+
+        struct event *AsyncInvoker::GetHandle()
+        {
+            return _event;
         }
 
         void AsyncInvoker::invokeCallbacks()
@@ -57,7 +57,7 @@ namespace io_simplify {
             communication->invokeCallbacks();
         }
 
-        void AsyncInvoker::Async(const CallbackToInvoke& callback_to_invoke)
+        void AsyncInvoker::Async(const CallbackToInvoke& callback_to_invoke, int what)
         {
             if (callback_to_invoke)
             {
@@ -65,7 +65,7 @@ namespace io_simplify {
                 _callback_to_invoke_list.push_back(callback_to_invoke);
             }
             
-            event_active(_evevent, 0, 0);
+            event_active(_event, what, 0);
         }
         
     }

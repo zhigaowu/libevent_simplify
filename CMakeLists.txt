@@ -53,16 +53,6 @@ INCLUDE(${CMAKE_SOURCE_DIR}/cmake/PrintFlags.cmake)
 FIND_PACKAGE(Libevent REQUIRED COMPONENTS core pthreads)
 PRINT_LIB_INFO("Libevent" "${LIBEVENT_INCLUDE_DIRS}" "${LIBEVENT_LIBRARIES}")
 
-# OpenSSL
-FIND_PACKAGE(OpenSSL REQUIRED)
-
-# glog
-FIND_PACKAGE(libglog REQUIRED)
-PRINT_LIB_INFO("libglog" "${libglog_INCLUDE_DIRS}" "${libglog_LIBRARIES}")
-
-# include 3rd headers
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/3rd/include)
-
 # windows 下额外的库文件
 IF (WIN32)
     SET(CMAKE_FIND_LIBRARY_SUFFIXES .dll .dll.a .a)
@@ -83,6 +73,7 @@ ENDIF()
 
 INCLUDE(CPack)
 
-ADD_SUBDIRECTORY(server_tests)
+#ADD_SUBDIRECTORY(server_tests)
+ADD_SUBDIRECTORY(client_tests)
 
 

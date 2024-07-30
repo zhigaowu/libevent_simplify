@@ -48,7 +48,11 @@ namespace io_simplify {
             size_t read_size = 0;
             if (_evevent)
             {
+#if defined(_WIN32) or defined(_WIN64)
+                ssize_t res = recvfrom(fd, (char*)data, size, flags, sa, &socklen);
+#else
                 ssize_t res = recvfrom(fd, data, size, flags, sa, &socklen);
+#endif
                 if (res > 0)
                 {
                     read_size = res;
@@ -62,7 +66,11 @@ namespace io_simplify {
         {
             if (_evevent)
             {
-                return sendto(fd, data, size, flags, sa, socklen);;
+#if defined(_WIN32) or defined(_WIN64)
+                return sendto(fd, (const char*)data, size, flags, sa, socklen);
+#else
+                return sendto(fd, data, size, flags, sa, socklen);
+#endif
             }
             return -1;
         }

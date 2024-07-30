@@ -78,7 +78,86 @@ namespace io_simplify {
             connection->_callback_connection_event_occurred(bev, what);
         }
 
-        int Connection::BindConnectionCallback(
+        int Connection::SetTimetout(const struct timeval *timeout_read, const struct timeval *timeout_write)
+        {
+            if (_bev)
+            {
+                return bufferevent_set_timeouts(_bev, timeout_read, timeout_write);
+            }
+
+            return -1;
+        }
+
+        int Connection::EnableRead()
+        {
+            if (_bev)
+            {
+                return bufferevent_enable(_bev, EV_READ);
+            }
+
+            return -1;
+        }
+
+        int Connection::DisableRead()
+        {
+            if (_bev)
+            {
+                return bufferevent_disable(_bev, EV_READ);
+            }
+
+            return -1;
+        }
+
+        int Connection::EnableWrite()
+        {
+            if (_bev)
+            {
+                return bufferevent_enable(_bev, EV_WRITE);
+            }
+
+            return -1;
+        }
+
+        int Connection::DisableWrite()
+        {
+            if (_bev)
+            {
+                return bufferevent_disable(_bev, EV_WRITE);
+            }
+
+            return -1;
+        }
+
+        void Connection::SetConnectionCallback(const CallbackConnectionEventOccurred &callback_connection_event_occurred)
+        {
+            _callback_connection_event_occurred = callback_connection_event_occurred;
+            if (_bev)
+            {
+                bufferevent_setcb(_bev, nullptr, nullptr, _callback_connection_event_occurred ? Connection::callbackEventOccurred : nullptr, this);
+            }
+        }
+
+        int Connection::SetReadWriteCallback(short event, const CallbackConnectionReadReady &callback_connection_read_ready, const CallbackConnectionWriteDone &callback_connection_write_done, const CallbackConnectionEventOccurred &callback_connection_event_occurred)
+        {
+            _callback_connection_read_ready = callback_connection_read_ready;
+            _callback_connection_write_done = callback_connection_write_done;
+            _callback_connection_event_occurred = callback_connection_event_occurred;
+
+            int res = -1;
+            if (_bev)
+            {
+                bufferevent_setcb(_bev, 
+                    _callback_connection_read_ready ? Connection::callbackToRead : nullptr, 
+                    _callback_connection_write_done ? Connection::callbackReadyToWrite : nullptr, 
+                    _callback_connection_event_occurred ? Connection::callbackEventOccurred : nullptr, 
+                    this);
+
+                res = bufferevent_enable(_bev, event);
+            }
+            return res;
+        }
+
+        int Connection::BindCallback(
             short event,
             const CallbackConnectionReadReady& callback_connection_read_ready,
             const CallbackConnectionWriteDone& callback_connection_write_done,
@@ -91,7 +170,11 @@ namespace io_simplify {
             int res = -1;
             if (_bev)
             {
-                bufferevent_setcb(_bev, Connection::callbackToRead, _callback_connection_write_done ? Connection::callbackReadyToWrite : nullptr, Connection::callbackEventOccurred, this);
+                bufferevent_setcb(_bev, 
+                    _callback_connection_read_ready ? Connection::callbackToRead : nullptr, 
+                    _callback_connection_write_done ? Connection::callbackReadyToWrite : nullptr, 
+                    _callback_connection_event_occurred ? Connection::callbackEventOccurred : nullptr, 
+                    this);
 
                 res = bufferevent_enable(_bev, event);
             }

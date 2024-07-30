@@ -45,6 +45,11 @@ namespace io_simplify {
             {
             }
 
+            EventBase& GetBase()
+            {
+                return _base;
+            }
+
             int Bind(const Endpoint& endpoint, const CallbackConnectionReady& callback_bufferevent_ready, const CallbackListenerErrorOccurred& callback_listener_error_occurred)
             {
                 return _listener.BindEndpoint(_base, endpoint, callback_bufferevent_ready, callback_listener_error_occurred);

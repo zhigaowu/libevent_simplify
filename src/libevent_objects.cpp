@@ -47,5 +47,32 @@ namespace io_simplify {
             return res;
         }
     }
-}
 
+    Endpoint FromSockAddress(const struct sockaddr *sa, socklen_t socklen)
+    {
+        Endpoint endpoint;
+
+        char addr[64] = {0};
+
+        if (sa->sa_family == AF_INET) 
+        {
+            const struct sockaddr_in *s = (const struct sockaddr_in *)sa;
+
+            endpoint.port = ntohs(s->sin_port);
+
+            evutil_inet_ntop(sa->sa_family, &(s->sin_addr), addr, sizeof(addr));
+        } 
+        else 
+        {
+            const struct sockaddr_in6 *s = (const struct sockaddr_in6 *)sa;
+
+            endpoint.port = ntohs(s->sin6_port);
+
+            evutil_inet_ntop(sa->sa_family, &(s->sin6_addr), addr, sizeof(addr));
+        }
+
+        endpoint.address = addr;
+
+        return endpoint;
+    }
+}

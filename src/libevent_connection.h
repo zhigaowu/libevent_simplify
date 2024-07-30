@@ -56,11 +56,29 @@ namespace io_simplify {
             int Write(const void* data, size_t size);
             int WriteBuffer(struct evbuffer *evbuf);
 
-            int BindConnectionCallback(
+            int SetTimetout(const struct timeval *timeout_read, const struct timeval *timeout_write);
+
+            int EnableRead();
+            int DisableRead();
+
+            int EnableWrite();
+            int DisableWrite();
+
+            void SetConnectionCallback(const CallbackConnectionEventOccurred& callback_connection_event_occurred);
+
+            int SetReadWriteCallback(
                 short event,
                 const CallbackConnectionReadReady& callback_connection_read_ready,
                 const CallbackConnectionWriteDone& callback_connection_write_done,
                 const CallbackConnectionEventOccurred& callback_connection_event_occurred);
+
+            int BindCallback(
+                short event,
+                const CallbackConnectionReadReady& callback_connection_read_ready,
+                const CallbackConnectionWriteDone& callback_connection_write_done,
+                const CallbackConnectionEventOccurred& callback_connection_event_occurred);
+
+            struct bufferevent* GetHandle() { return _bev; }
 
         public:
             Connection() = delete;

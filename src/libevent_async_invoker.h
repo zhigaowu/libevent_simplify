@@ -30,7 +30,7 @@ namespace io_simplify {
         using CallbackToInvoke = std::function<void()>;
 
         class AsyncInvoker {
-            struct event* _evevent;
+            struct event* _event;
 
             std::mutex _locker;
 
@@ -43,10 +43,12 @@ namespace io_simplify {
             static void callbackInvoked(evutil_socket_t fd, short what, void* ctx);
 
         public:
-            explicit AsyncInvoker(struct event_base *evbase, short flags = 0);
+            explicit AsyncInvoker(struct event_base *evbase, short events = 0); // EV_READ、EV_WRITE、EV_SIGNAL
             ~AsyncInvoker();
 
-            void Async(const CallbackToInvoke& callback_to_invoke);
+            struct event* GetHandle();
+
+            void Async(const CallbackToInvoke& callback_to_invoke, int what = 0); // EV_READ、EV_WRITE、EV_TIMEOUT
 
         public:
             AsyncInvoker() = delete;
