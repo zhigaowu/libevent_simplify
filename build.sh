@@ -1,3 +1,3 @@
 #! /bin/bash
 
-cmake --build cmake.build --target install
+cmake --build build --target install
