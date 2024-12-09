@@ -33,7 +33,14 @@ int test_tcp_client(io_simplify::libevent::BaseConfig& base_config, int argc, ch
         client.Connect(
             io_simplify::Endpoint{ argv[ADDRESS_INDEX], (uint16_t)atoi(argv[PORT_INDEX])}, 
             [] (int32_t status, const std::string& message) {
-                std::cout << "connect to server(" << message << ")" << std::endl;
+                if (status < 0)
+                {
+                    std::cout << "connect to server status(" << message << ")" << std::endl;
+                }
+                else
+                {
+                    std::cout << "connected to server" << std::endl;
+                }
                 NOTIFY_TO_WORK();
             },
             []() {
@@ -66,7 +73,14 @@ int test_tcp_client(io_simplify::libevent::BaseConfig& base_config, int argc, ch
                 client.Connect(
                     io_simplify::Endpoint{ "172.21.206.202", 3600}, 
                     [] (int32_t status, const std::string& message) {
-                        std::cout << "connect to server(" << message << ")" << std::endl;
+                        if (status < 0)
+                        {
+                            std::cout << "connect to server status(" << message << ")" << std::endl;
+                        }
+                        else
+                        {
+                            std::cout << "connected to server" << std::endl;
+                        }
                         NOTIFY_TO_WORK();
                     },
                     []() {
@@ -99,6 +113,10 @@ int test_tcp_client(io_simplify::libevent::BaseConfig& base_config, int argc, ch
             client.Write(data_to_send, 
             [] (int32_t status, const std::string& message) {
                 std::cout << "write status: " << message << std::endl;
+                if (status < 0)
+                {
+                    NOTIFY_TO_WORK();
+                }
             },
             timeval{1, 0},
             [] () {

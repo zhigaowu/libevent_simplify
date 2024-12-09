@@ -66,7 +66,7 @@ namespace io_simplify {
             int EnableWrite();
             int DisableWrite();
 
-            void SetConnectionCallback(const CallbackConnectionEventOccurred& callback_connection_event_occurred, const CallbackConnectionReadReady& callback_connection_read_ready = nullptr);
+            int SetConnectionCallback(const CallbackConnectionEventOccurred& callback_connection_event_occurred, const CallbackConnectionReadReady& callback_connection_read_ready = nullptr);
 
             int BindCallback(
                 short event,

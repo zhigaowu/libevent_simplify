@@ -77,7 +77,11 @@ namespace io_simplify {
                     _read_callback = read_callback;
                 }
 
-                _disconnected_callback = disconnected_callback;
+                _disconnected_callback = [this, disconnected_callback] () {
+                        Disconnect();
+
+                        disconnected_callback();
+                    };
 
                 io_simplify::libevent::CallbackConnectionEventOccurred callback_connection_event_occurred = [
                     this, 
@@ -106,10 +110,7 @@ namespace io_simplify {
                     _read_callback(_connection);
                 };
 
-                _connection->SetConnectionCallback(callback_connection_event_occurred, read_callback);
-
-                // connection disconnected event is activated with
-                if ((res = _connection->EnableRead()) < 0)
+                if ((res = _connection->SetConnectionCallback(callback_connection_event_occurred, read_callback)) < 0)
                 {
                     connect_callback(res, evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
                     return;

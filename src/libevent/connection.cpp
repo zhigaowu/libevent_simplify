@@ -139,7 +139,7 @@ namespace io_simplify {
             return -1;
         }
 
-        void Connection::SetConnectionCallback(const CallbackConnectionEventOccurred &callback_connection_event_occurred, const CallbackConnectionReadReady& callback_connection_read_ready)
+        int Connection::SetConnectionCallback(const CallbackConnectionEventOccurred &callback_connection_event_occurred, const CallbackConnectionReadReady& callback_connection_read_ready)
         {
             _callback_connection_event_occurred = callback_connection_event_occurred;
             _callback_connection_read_ready = callback_connection_read_ready;
@@ -151,6 +151,9 @@ namespace io_simplify {
                     _callback_connection_event_occurred ? Connection::callbackEventOccurred : nullptr, 
                     this);
             }
+
+            // connection event is activated by read
+            return EnableRead();
         }
 
         int Connection::BindCallback(

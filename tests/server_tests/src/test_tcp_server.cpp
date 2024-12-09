@@ -35,6 +35,9 @@ int test_tcp_server(io_simplify::libevent::BaseConfig& base_config, int argc, ch
 
             io_simplify::libevent::TcpConnection* connection = new io_simplify::libevent::TcpConnection(evbase, fd, BEV_OPT_CLOSE_ON_FREE);
 
+            // set timeout for tcp connection
+            //connection->SetTimetout();
+
             std::vector<uint8_t> stream_buffer(128, 0);
 
             int res = connection->BindCallback(
@@ -52,22 +55,23 @@ int test_tcp_server(io_simplify::libevent::BaseConfig& base_config, int argc, ch
                 [](struct bufferevent* bev) {
                     std::cout << "send ready..." << std::endl;
                 },
-                [connection] (struct bufferevent* bev, short what) {
+                [connection, endpoint] (struct bufferevent* bev, short what) {
                     if (what & BEV_EVENT_EOF) 
                     {
-                        std::cout << "connection closed." << std::endl;
+                        std::cout << "connection[" << endpoint.address << ":" << endpoint.port << "] closed." << std::endl;
                     }
                     else if (what & BEV_EVENT_ERROR)
                     {
-                        std::cerr << "got an error on the connection: " << evutil_socket_error_to_string(errno) << std::endl;
+                        static char error_types[][32] = { "", "read exection", "write exection", "read and write exection"};
+                        std::cerr << "connection[" << endpoint.address << ":" << endpoint.port << "] error: " << error_types[what & (BEV_EVENT_READING | BEV_EVENT_WRITING)] << ", ready to close this connection." << std::endl;
                     }
                     else if (what & BEV_EVENT_TIMEOUT) 
                     {
-                        std::cout << "time out." << std::endl;
+                        std::cout << "connection[" << endpoint.address << ":" << endpoint.port << "] time out." << std::endl;
                     }
                     else
                     {
-                        std::cout << "event: " << (int)what << std::endl;
+                        std::cout << "connection[" << endpoint.address << ":" << endpoint.port << "] event: " << evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()) << std::endl;
                     }
                     delete connection;
             });
@@ -84,6 +88,8 @@ int test_tcp_server(io_simplify::libevent::BaseConfig& base_config, int argc, ch
     
     if (res >= 0)
     {
+        std::cout << "ready to serve ... " << std::endl;
+
         res =  server.Serve();
     }
     else

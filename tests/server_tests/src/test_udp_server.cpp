@@ -63,6 +63,8 @@ int test_udp_server(io_simplify::libevent::BaseConfig& base_config, int argc, ch
     }
     else
     {
+        std::cout << "ready to serve ... " << std::endl;
+
         std::cerr << "Bind endpoint error: " << evutil_socket_error_to_string(res) << std::endl;
     }
 
